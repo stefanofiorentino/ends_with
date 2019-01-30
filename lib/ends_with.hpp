@@ -21,32 +21,6 @@
 #ifndef ENDS_WITH_ENDS_WITH_HPP
 #define ENDS_WITH_ENDS_WITH_HPP
 
-template<typename T>
-struct has_size
-{
-    typedef char one;
-    typedef long two;
-
-    template<typename C>
-    static one test(typeof(&C::size))
-    {
-        return one{};
-    };
-
-    template<typename C>
-    static two test(...)
-    {
-        return two{};
-    };
-
-    enum
-    {
-        value = sizeof(test<T>(0)) == sizeof(char)
-    };
-};
-
-inline bool ends_with(...);
-
 template<typename InIter, typename OutIter>
 inline bool
 ends_with(InIter &&firstValueIter, InIter &&lastValueIter, OutIter &&firstPostfixIter)
@@ -54,29 +28,6 @@ ends_with(InIter &&firstValueIter, InIter &&lastValueIter, OutIter &&firstPostfi
     if (std::distance(firstPostfixIter, OutIter(std::reverse_iterator<OutIter>(firstPostfixIter).base())) > std::distance(firstValueIter, lastValueIter))
     { return false; }
     return std::equal(firstPostfixIter, OutIter(std::reverse_iterator<OutIter>(firstPostfixIter).base()), firstValueIter);
-}
-
-template<typename T>
-inline
-typename std::enable_if<has_size<T>::value, bool>::type
-ends_with(T const &value, T const &postfix)
-{
-    return ends_with(std::begin(value), std::end(value), std::begin(postfix));
-}
-
-inline bool ends_with(std::string const &value, const char *postfix)
-{
-    return ends_with(value, std::string(postfix));
-}
-
-inline bool ends_with(const char *value, std::string const &postfix)
-{
-    return ends_with(std::string(value), postfix);
-}
-
-inline bool ends_with(const char *value, const char *postfix)
-{
-    return ends_with(std::string(value), std::string(postfix));
 }
 
 #endif //ENDS_WITH_ENDS_WITH_HPP
