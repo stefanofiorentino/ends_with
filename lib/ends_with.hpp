@@ -1,33 +1,46 @@
-/*
- * Copyright © 2011-2018 BTicino S.p.A.
- * 
- * This file is part of bt_drover.
- * 
- * bt_drover is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * bt_drover is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with bt_drover. If not, see <http://www.gnu.org/licenses/>.
- * 
- * 
- */
 #ifndef ENDS_WITH_ENDS_WITH_HPP
 #define ENDS_WITH_ENDS_WITH_HPP
 
-template<typename InIter, typename OutIter>
+template<typename matchee_iter, typename matcher_iter>
 inline bool
-ends_with(InIter &&firstValueIter, InIter &&lastValueIter, OutIter &&firstPostfixIter)
+ends_with(matchee_iter begin_matchee_iter, matchee_iter end_matchee_iter, matcher_iter begin_matcher_iter,
+          matcher_iter end_matcher_iter)
 {
-    if (std::distance(firstPostfixIter, OutIter(std::reverse_iterator<OutIter>(firstPostfixIter).base())) > std::distance(firstValueIter, lastValueIter))
+    std::puts(__PRETTY_FUNCTION__);
+    if (std::distance(begin_matcher_iter, end_matcher_iter) > std::distance(begin_matchee_iter, end_matchee_iter))
     { return false; }
-    return std::equal(firstPostfixIter, OutIter(std::reverse_iterator<OutIter>(firstPostfixIter).base()), firstValueIter);
+    return std::equal(std::reverse_iterator<matcher_iter>(end_matcher_iter),
+                      std::reverse_iterator<matcher_iter>(begin_matcher_iter),
+                      std::reverse_iterator<matchee_iter>(end_matchee_iter));
+}
+
+template<typename matchee, typename matcher, std::size_t N>
+inline
+typename std::enable_if<std::is_constructible<matchee, const matcher (&)[N]>::value, bool>::type
+ends_with(matchee const &e, const matcher (& r)[N])
+{
+    std::puts(__PRETTY_FUNCTION__);
+    matchee const er(std::forward<matchee>(r));
+    return ends_with(std::begin(e), std::end(e), std::begin(er), std::end(er));
+}
+
+template<typename matcher, typename matchee, std::size_t N>
+inline
+typename std::enable_if<std::is_constructible<matcher, const matchee (&)[N]>::value, bool>::type
+ends_with(const matchee (& e)[N], matcher const &r)
+{
+    std::puts(__PRETTY_FUNCTION__);
+    matcher const re(std::forward<const matchee (&)[N]>(e));
+    return ends_with(std::begin(re), std::end(re), std::begin(r), std::end(r));
+}
+
+template<typename matchee, typename matcher>
+inline
+bool
+ends_with(matchee const &e, matcher const &r)
+{
+    std::puts(__PRETTY_FUNCTION__);
+    return ends_with(std::begin(e), std::end(e), std::begin(r), std::end(r));
 }
 
 #endif //ENDS_WITH_ENDS_WITH_HPP
